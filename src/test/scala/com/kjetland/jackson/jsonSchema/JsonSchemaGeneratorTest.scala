@@ -3,7 +3,6 @@ package com.kjetland.jackson.jsonSchema
 import java.time.{LocalDate, LocalDateTime, OffsetDateTime}
 import java.util
 import java.util.{Collections, Optional, TimeZone}
-
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.node.{ArrayNode, MissingNode, ObjectNode}
 import com.fasterxml.jackson.databind.{JavaType, JsonNode, ObjectMapper, SerializationFeature}
@@ -24,8 +23,10 @@ import com.kjetland.jackson.jsonSchema.testData.polymorphism3.{Child31, Child32,
 import com.kjetland.jackson.jsonSchema.testData.polymorphism4.{Child41, Child42}
 import com.kjetland.jackson.jsonSchema.testData.polymorphism5.{Child51, Child52, Parent5}
 import com.kjetland.jackson.jsonSchema.testData.polymorphism6.{Child61, Parent6}
+import com.kjetland.jackson.jsonSchema.testData.polymorphism7.{Child71, Parent7}
 import com.kjetland.jackson.jsonSchema.testDataScala._
 import com.kjetland.jackson.jsonSchema.testData_issue_24.EntityWrapper
+
 import javax.validation.groups.Default
 import org.scalatest.{FunSuite, Matchers}
 
@@ -401,7 +402,9 @@ class JsonSchemaGeneratorTest extends FunSuite with Matchers {
 
   def assertChild1(node:JsonNode, path:String, defName:String = "Child1", typeParamName:String = "type", typeName:String = "child1", html5Checks:Boolean = false): Unit ={
     val child1 = getNodeViaRefs(node, path, defName)
-    assertJsonSubTypesInfo(child1, typeParamName, typeName, html5Checks)
+    if (typeParamName != null) {
+      assertJsonSubTypesInfo(child1, typeParamName, typeName, html5Checks)
+    }
     assert(child1.at("/properties/parentString/type").asText() == "string")
     assert(child1.at("/properties/child1String/type").asText() == "string")
     assert(child1.at("/properties/_child1String2/type").asText() == "string")
@@ -421,7 +424,9 @@ class JsonSchemaGeneratorTest extends FunSuite with Matchers {
 
   def assertChild2(node:JsonNode, path:String, defName:String = "Child2", typeParamName:String = "type", typeName:String = "child2", html5Checks:Boolean = false): Unit ={
     val child2 = getNodeViaRefs(node, path, defName)
-    assertJsonSubTypesInfo(child2, typeParamName, typeName, html5Checks)
+    if (typeParamName != null) {
+      assertJsonSubTypesInfo(child2, typeParamName, typeName, html5Checks)
+    }
     assert(child2.at("/properties/parentString/type").asText() == "string")
     assert(child2.at("/properties/child2int/type").asText() == "integer")
   }
@@ -477,6 +482,43 @@ class JsonSchemaGeneratorTest extends FunSuite with Matchers {
 
       assertChild1(schema, "/oneOf", "Child1Scala")
       assertChild2(schema, "/oneOf", "Child2Scala")
+    }
+
+  }
+
+  test("Generate schema for super class annotated with @JsonTypeInfo - use = JsonTypeInfo.Id.DEDUCTION") {
+
+    // Java
+    {
+      val jsonNode = assertToFromJson(jsonSchemaGenerator, testData.child71)
+      assertToFromJson(jsonSchemaGenerator, testData.child71, classOf[Parent7])
+
+      val schema = generateAndValidateSchema(jsonSchemaGenerator, classOf[Parent7], Some(jsonNode))
+
+      assertChild1(schema, "/oneOf", "Child71", null)
+      assertChild2(schema, "/oneOf", "Child72", null)
+    }
+
+    // Java + Nullables
+    {
+      val jsonNode = assertToFromJson(jsonSchemaGeneratorNullable, testData.child71)
+      assertToFromJson(jsonSchemaGeneratorNullable, testData.child71, classOf[Parent7])
+
+      val schema = generateAndValidateSchema(jsonSchemaGenerator, classOf[Parent7], Some(jsonNode))
+
+      assertChild1(schema, "/oneOf", "Child71", null)
+      assertChild2(schema, "/oneOf", "Child72", null)
+    }
+
+    // Scala
+    {
+      val jsonNode = assertToFromJson(jsonSchemaGeneratorScala, testData.child1ScalaUsingDeduction)
+      assertToFromJson(jsonSchemaGeneratorScala, testData.child1ScalaUsingDeduction, classOf[ParentUsingDeduction])
+
+      val schema = generateAndValidateSchema(jsonSchemaGeneratorScala, classOf[ParentUsingDeduction], Some(jsonNode))
+
+      assertChild1(schema, "/oneOf", "Child1UsingDeduction", null)
+      assertChild2(schema, "/oneOf", "Child2UsingDeduction", null)
     }
 
   }
@@ -1794,10 +1836,21 @@ trait TestData {
     c.child1String3 = "cs3"
     c
   }
+  val child71 = {
+    val c = new Child71()
+    c.parentString = "pv"
+    c.child1String = "cs"
+    c.child1String2 = "cs2"
+    c.child1String3 = "cs3"
+    c
+  }
 
   val child2Scala = Child2Scala("pv", 12)
   val child1Scala = Child1Scala("pv", "cs", "cs2", "cs3")
   val pojoWithParentScala = PojoWithParentScala(pojoValue = true, child1Scala, "y", 13, booleanWithDefault = true)
+
+  val child1ScalaUsingDeduction = Child1UsingDeduction("pv", "cs", "cs2", "cs3")
+  val child2ScalaUsingDeduction = Child2UsingDeduction("pv", 12)
 
   val classNotExtendingAnything = {
     val o = new ClassNotExtendingAnything

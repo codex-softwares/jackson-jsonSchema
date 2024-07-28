@@ -880,13 +880,16 @@ class JsonSchemaGenerator
         Option(serializerOrNull).map { serializer =>
           serializer.getTypeInclusion match {
             case JsonTypeInfo.As.PROPERTY | JsonTypeInfo.As.EXISTING_PROPERTY =>
-              val idResolver = serializer.getTypeIdResolver
-              val id = idResolver match {
-                // use custom implementation instead, because default implementation needs instance and we don't have one
-                case _ : MinimalClassNameIdResolver => extractMinimalClassnameId(baseType, _type)
-                case _ => idResolver.idFromValueAndType(null, _type.getRawClass)
-              }
-              PolymorphismInfo(serializer.getPropertyName, id)
+              Option(serializer.getTypeIdResolver).map { idResolver =>
+                val id = idResolver match {
+                  // use custom implementation instead, because default implementation needs instance and we don't have one
+                  case _: MinimalClassNameIdResolver => extractMinimalClassnameId(baseType, _type)
+                  case _ => idResolver.idFromValueAndType(null, _type.getRawClass)
+                }
+                PolymorphismInfo(serializer.getPropertyName, id)
+              }.getOrElse(
+                PolymorphismInfo(null, extractMinimalClassnameId(baseType, _type))
+              )
 
             case x => throw new Exception(s"We do not support polymorphism using jsonTypeInfo.include() = $x")
           }
@@ -902,7 +905,7 @@ class JsonSchemaGenerator
         jsonTypeInfo: JsonTypeInfo =>
 
           jsonTypeInfo.use() match {
-            case JsonTypeInfo.Id.NAME =>
+            case JsonTypeInfo.Id.DEDUCTION | JsonTypeInfo.Id.NAME =>
               // First we try to resolve types via manually finding annotations (if success, it will preserve the order), if not we fallback to use collectAndResolveSubtypesByClass()
               val subTypes: List[Class[_]] = Option(_type.getRawClass.getDeclaredAnnotation(classOf[JsonSubTypes])).map {
                 ann: JsonSubTypes =>
@@ -1076,19 +1079,21 @@ class JsonSchemaGenerator
                   val enumValuesNode = JsonNodeFactory.instance.arrayNode()
                   enumValuesNode.add(pi.subTypeName)
 
-                  val enumObjectNode = getOrCreateObjectChild(propertiesNode, pi.typePropertyName)
-                  enumObjectNode.put("type", "string")
-                  enumObjectNode.set("enum", enumValuesNode)
-                  enumObjectNode.put("default", pi.subTypeName)
+                  if (pi.typePropertyName != null) {
+                    val enumObjectNode = getOrCreateObjectChild(propertiesNode, pi.typePropertyName)
+                    enumObjectNode.put("type", "string")
+                    enumObjectNode.set("enum", enumValuesNode)
+                    enumObjectNode.put("default", pi.subTypeName)
 
-                  if (config.hidePolymorphismTypeProperty) {
-                    // Make sure the editor hides this polymorphism-specific property
-                    val optionsNode = JsonNodeFactory.instance.objectNode()
-                    enumObjectNode.set("options", optionsNode)
-                    optionsNode.put("hidden", true)
+                    if (config.hidePolymorphismTypeProperty) {
+                      // Make sure the editor hides this polymorphism-specific property
+                      val optionsNode = JsonNodeFactory.instance.objectNode()
+                      enumObjectNode.set("options", optionsNode)
+                      optionsNode.put("hidden", true)
+                    }
+
+                    getRequiredArrayNode(thisObjectNode).add(pi.typePropertyName)
                   }
-
-                  getRequiredArrayNode(thisObjectNode).add(pi.typePropertyName)
 
                   if (config.useMultipleEditorSelectViaProperty) {
                     // https://github.com/jdorn/json-editor/issues/709

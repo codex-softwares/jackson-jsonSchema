@@ -1,11 +1,8 @@
 Jackson jsonSchema Generator
 ===================================
-[![Build Status](https://travis-ci.org/mbknor/mbknor-jackson-jsonSchema.svg)](https://travis-ci.org/mbknor/mbknor-jackson-jsonSchema)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.kjetland/mbknor-jackson-jsonschema_2.12/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cmbknor-jackson-jsonSchema)
 
-This projects aims to do a better job than the original [jackson-module-jsonSchema](https://github.com/FasterXML/jackson-module-jsonSchema)
-in generating jsonSchema from your POJOs using Jackson @Annotations.
-
+This is a fork of [mbknor-jackson-jsonSchema](https://github.com/codex-softwares/jackson-jsonSchema) which is not actively maintained anymore.
+This allows to generate jsonSchema from your POJOs using Jackson @Annotations.
 
 **Highlights**
 
@@ -29,7 +26,7 @@ in generating jsonSchema from your POJOs using Jackson @Annotations.
 
 **Benefits**
 
-* Simple implementation - Just [one file](https://github.com/mbknor/mbknor-jackson-jsonSchema/blob/master/src/main/scala/com/kjetland/jackson/jsonSchema/JsonSchemaGenerator.scala)  (for now..)
+* Simple implementation - Just [one file](https://github.com/codex-softwares/jackson-jsonSchema/blob/master/src/main/scala/com/kjetland/jackson/jsonSchema/JsonSchemaGenerator.scala)  (for now..)
 * Implemented in Scala (*Built for 2.10, 2.11, 2.12 and 2.13*)
 * Easy to fix and add functionality
 
@@ -39,7 +36,7 @@ Flexible
 If this generator does not generate exactly the schema you want, you can inject it by using the
 **@JsonSchemaInject**-annotation.
 
-If you need to use *patternProperties* (which is not currently 'natively' supported by *mbknor-jackson-jsonSchema*),
+If you need to use *patternProperties* (which is not currently 'natively' supported by *jackson-jsonSchema*),
 you can make it work by injecting the following json-schema-fragment:
 
 ```Json
@@ -194,8 +191,8 @@ Using Maven
 Add this to you pom.xml:
 
     <dependency>
-        <groupId>com.kjetland</groupId>
-        <artifactId>mbknor-jackson-jsonschema_2.12</artifactId>
+        <groupId>ch.codexs.util/groupId>
+        <artifactId>jackson-jsonschema_2.12</artifactId>
         <version>[---LATEST VERSION---]</version>
     </dependency>    
 
@@ -204,7 +201,7 @@ Using sbt
 
 Add this to you sbt build-config:
 
-    "com.kjetland" %% "mbknor-jackson-jsonschema" % "[---LATEST VERSION---]"
+    "ch.codexs.util" %% "jackson-jsonschema" % "[---LATEST VERSION---]"
 
 
 Code - Using Scala
@@ -354,7 +351,7 @@ In some cases it is needed to find extra info about classes not found in jackson
 
 By default we scan the entire classpath. This can be slow, so it is better to customize what to scan.
 
-This is how you can configure what *mbknor-jackson-jsonSchema* should scan 
+This is how you can configure what *jackson-jsonSchema* should scan 
 
 in Scala:
 ```Scala

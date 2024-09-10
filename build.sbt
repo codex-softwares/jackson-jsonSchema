@@ -2,8 +2,8 @@ import ReleaseTransformations._
 import sbtrelease.ReleasePlugin.autoImport.releaseStepCommand
 
 lazy val commonSettings = Seq(
-  organization := "com.kjetland",
-  organizationName := "mbknor",
+  organization := "ch.codexs.util",
+  organizationName := "CODEX Softwares Sàrl",
   scalaVersion := "2.12.4",
   crossScalaVersions := Seq("2.11.12", "2.12.13", "2.13.4"),
   publishMavenStyle := true,
@@ -17,19 +17,19 @@ lazy val commonSettings = Seq(
       Some("releases" at nexus + "service/local/staging/deploy/maven2")
   },
   credentials += Credentials(Path.userHome / ".ivy2" / ".credentials_sonatype"),
-  homepage := Some(url("https://github.com/mbknor/mbknor-jackson-jsonSchema")),
-  licenses := Seq("MIT" -> url("https://github.com/mbknor/mbknor-jackson-jsonSchema/blob/master/LICENSE.txt")),
+  homepage := Some(url("https://github.com/codex-softwares/jackson-jsonSchema")),
+  licenses := Seq("MIT" -> url("https://github.com/codex-softwares/jackson-jsonSchema/blob/master/LICENSE.txt")),
   startYear := Some(2016),
   pomExtra := (
       <scm>
-        <url>git@github.com:mbknor/mbknor-jackson-jsonSchema.git</url>
-        <connection>scm:git:git@github.com:mbknor/mbknor-jackson-jsonSchema.git</connection>
+        <url>git@github.com:codex-softwares/jackson-jsonSchema.git</url>
+        <connection>scm:git:git@github.com:codex-softwares/jackson-jsonSchema.git</connection>
       </scm>
       <developers>
         <developer>
-          <id>mbknor</id>
-          <name>Morten Kjetland</name>
-          <url>https://github.com/mbknor</url>
+          <id>jocmer-codex</id>
+          <name>Jocelyn Mérand</name>
+          <url>https://github.com/jocmer-codex</url>
         </developer>
       </developers>),
   compileOrder in Test := CompileOrder.Mixed,
@@ -44,13 +44,15 @@ lazy val commonSettings = Seq(
       Seq()
   },
   packageOptions in (Compile, packageBin) +=
-    Package.ManifestAttributes( "Automatic-Module-Name" -> "mbknor.jackson.jsonschema" )
+    Package.ManifestAttributes( "Automatic-Module-Name" -> "codexs.jackson.jsonschema" )
 )
 
 
-val jacksonVersion = "2.12.1"
-val jacksonModuleScalaVersion = "2.12.1"
+val jacksonVersion = "2.15.3"
+val jacksonModuleScalaVersion = "2.15.3"
 val slf4jVersion = "1.7.26"
+
+kotlinVersion := "1.6.0"
 
 lazy val deps  = Seq(
   "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion,
@@ -69,7 +71,7 @@ lazy val deps  = Seq(
 )
 
 lazy val root = (project in file("."))
-  .settings(name := "mbknor-jackson-jsonSchema")
+  .settings(name := "jackson-jsonSchema")
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= (deps))
 

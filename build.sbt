@@ -1,5 +1,7 @@
 import ReleaseTransformations._
 import sbtrelease.ReleasePlugin.autoImport.releaseStepCommand
+import xerial.sbt.Sonatype.autoImport.sonatypeCredentialHost
+import xerial.sbt.Sonatype.{sonatype01, sonatypeCentralHost}
 
 lazy val commonSettings = Seq(
   organization := "ch.codexs.util",
@@ -16,7 +18,6 @@ lazy val commonSettings = Seq(
     else
       Some("releases" at nexus + "service/local/staging/deploy/maven2")
   },
-  credentials += Credentials(Path.userHome / ".ivy2" / ".credentials_sonatype"),
   homepage := Some(url("https://github.com/codex-softwares/jackson-jsonSchema")),
   licenses := Seq("MIT" -> url("https://github.com/codex-softwares/jackson-jsonSchema/blob/master/LICENSE.txt")),
   startYear := Some(2016),
@@ -44,9 +45,8 @@ lazy val commonSettings = Seq(
       Seq()
   },
   packageOptions in (Compile, packageBin) +=
-    Package.ManifestAttributes( "Automatic-Module-Name" -> "codexs.jackson.jsonschema" )
+    Package.ManifestAttributes( "Automatic-Module-Name" -> "codexs.jackson.jsonschema" ),
 )
-
 
 val jacksonVersion = "2.15.3"
 val jacksonModuleScalaVersion = "2.15.3"
@@ -75,6 +75,8 @@ lazy val root = (project in file("."))
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= (deps))
 
+ThisBuild / sonatypeCredentialHost := sonatypeCentralHost
+publishTo := sonatypePublishToBundle.value
 
 releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
@@ -87,5 +89,5 @@ releaseProcess := Seq[ReleaseStep](
   setNextVersion,
   commitNextVersion,
   pushChanges,
-  releaseStepCommand("sonatypeRelease")
+  releaseStepCommand("sonatypeBundleRelease")
 )

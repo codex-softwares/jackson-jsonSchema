@@ -193,15 +193,24 @@ Add this to you pom.xml:
     <dependency>
         <groupId>ch.codexs.util/groupId>
         <artifactId>jackson-jsonschema_2.12</artifactId>
-        <version>[---LATEST VERSION---]</version>
+        <version>1.0.40</version>
     </dependency>    
+
+Using Gradle
+---------------
+
+Add this to the `dependencies` section in you `build.gradle`
+
+```
+    implementation 'ch.codexs.util:jackson-jsonschema_2.12:1.0.40'
+```
 
 Using sbt
 ------------
 
 Add this to you sbt build-config:
 
-    "ch.codexs.util" %% "jackson-jsonschema" % "[---LATEST VERSION---]"
+    "ch.codexs.util" %% "jackson-jsonschema" % "1.0.40"
 
 
 Code - Using Scala
